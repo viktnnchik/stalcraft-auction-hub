@@ -9,19 +9,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
 
 export const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { signIn, signUp } = useAuth();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLogin) {
-      await signIn(email, password);
-    } else {
-      await signUp(email, password);
+    console.log("Form submitted", { email, password, isLogin });
+    
+    try {
+      if (isLogin) {
+        console.log("Attempting to sign in...");
+        await signIn(email, password);
+      } else {
+        console.log("Attempting to sign up...");
+        await signUp(email, password);
+      }
+    } catch (error) {
+      console.error("Auth error:", error);
+      toast({
+        title: "Ошибка",
+        description: "Произошла ошибка при авторизации",
+        variant: "destructive",
+      });
     }
   };
 
