@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import ItemDetails from "./pages/ItemDetails";
+import { Roulette } from "./components/Roulette";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +21,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/item/:id" element={<ItemDetails />} />
             <Route path="/players" element={<div className="p-6">Предметы игроков (в разработке)</div>} />
-            <Route path="/roulette" element={<div className="p-6">Рулетка (в разработке)</div>} />
+            <Route path="/roulette" element={<Roulette />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
