@@ -19,14 +19,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Проверяем текущую сессию
+    console.log("AuthProvider: Checking session...");
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("AuthProvider: Session check complete", session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Подписываемся на изменения авторизации
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("AuthProvider: Auth state changed", _event, session);
       setUser(session?.user ?? null);
     });
 
@@ -35,52 +36,87 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      console.log("AuthProvider: Attempting sign in...");
+      const { error, data } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password,
+      });
+      
       if (error) throw error;
+      
+      console.log("AuthProvider: Sign in successful", data);
       toast({
         title: "Успешный вход",
         description: "Добро пожаловать!",
       });
     } catch (error: any) {
+      console.error("AuthProvider: Sign in error", error);
       toast({
         title: "Ошибка входа",
         description: error.message,
         variant: "destructive",
       });
+      throw error;
     }
   };
 
   const signUp = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
+      console.log("AuthProvider: Attempting sign up...");
+      const { error, data } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}`,
+          data: {
+            role: 'user'
+          }
+        }
+      });
+
       if (error) throw error;
+
+      // Автоматически входим после регистрации
+      if (data.user) {
+        console.log("AuthProvider: Sign up successful, attempting automatic sign in...");
+        await signIn(email, password);
+      }
+
+      console.log("AuthProvider: Sign up and auto-login complete", data);
       toast({
         title: "Регистрация успешна",
-        description: "Проверьте вашу почту для подтверждения аккаунта.",
+        description: "Вы успешно зарегистрировались и вошли в систему",
       });
     } catch (error: any) {
+      console.error("AuthProvider: Sign up error", error);
       toast({
         title: "Ошибка регистрации",
         description: error.message,
         variant: "destructive",
       });
+      throw error;
     }
   };
 
   const signOut = async () => {
     try {
+      console.log("AuthProvider: Attempting sign out...");
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
+      console.log("AuthProvider: Sign out successful");
       toast({
         title: "Выход выполнен",
         description: "Вы успешно вышли из системы.",
       });
     } catch (error: any) {
+      console.error("AuthProvider: Sign out error", error);
       toast({
         title: "Ошибка выхода",
         description: error.message,
         variant: "destructive",
       });
+      throw error;
     }
   };
 
